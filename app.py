@@ -1,3 +1,5 @@
 print("Hola desde el Banco")
 print("Bienvenido al sistema")
+print("Sistema listo para operar")
 print("Sistema bancario principal")
+print("Consulta de saldo")
