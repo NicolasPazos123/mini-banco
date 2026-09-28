@@ -1,1 +1,1 @@
-print("Hola desde el mini banco")
+print("Hola desde el Banco")
