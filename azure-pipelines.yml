@@ -10,6 +10,12 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- script: pip install -r requirements.txt
+  displayName: 'Instalar dependencias'
+
+- script: python3 -m pytest
+  displayName: 'Ejecutar tests'
+
 - script: python3 app.py
   displayName: 'Ejecutar aplicación'
 
