@@ -10,12 +10,12 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: pip install -r requirements.txt
-  displayName: 'Instalar dependencias'
+- script: docker build -t mini-banco:1.0 .
+  displayName: 'Construir imagen Docker'
 
-- script: python3 -m pytest
-  displayName: 'Ejecutar tests'
+- script: docker run --rm mini-banco:1.0 python3 -m pytest
+  displayName: 'Ejecutar tests en Docker'
 
-- script: python3 app.py
-  displayName: 'Ejecutar aplicación'
+- script: docker run --rm mini-banco:1.0
+  displayName: 'Ejecutar aplicación en Docker'
 
