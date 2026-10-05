@@ -15,7 +15,7 @@ steps:
   displayName: 'Construir imagen Docker'
   inputs:
     command: build
-    repository: mini-banco
+    repository: minibancolab2026.azurecr.io/mini-banco
     Dockerfile: '**/Dockerfile'
     tags: |
       1.0
