@@ -10,11 +10,27 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: docker build -t mini-banco:1.0 .
+
+- task: Docker@2
   displayName: 'Construir imagen Docker'
+  inputs:
+    command: build
+    repository: mini-banco
+    Dockerfile: '**/Dockerfile'
+    tags: |
+      1.0
 
 - script: docker run --rm mini-banco:1.0 python3 -m pytest
   displayName: 'Ejecutar tests en Docker'
+
+- task: Docker@2
+  displayName: 'Publicar imagen en ACR'
+  inputs:
+    command: push
+    containerRegistry: 'sc-mini-banco-acr'
+    repository: mini-banco
+    tags: |
+      1.0
 
 - script: docker run --rm mini-banco:1.0
   displayName: 'Ejecutar aplicación en Docker'
