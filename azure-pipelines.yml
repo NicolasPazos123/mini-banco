@@ -20,7 +20,7 @@ steps:
     tags: |
       1.0
 
-- script: docker run --rm mini-banco:1.0 python3 -m pytest
+- script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0 python3 -m pytest
   displayName: 'Ejecutar tests en Docker'
 
 - task: Docker@2
@@ -32,6 +32,6 @@ steps:
     tags: |
       1.0
 
-- script: docker run --rm mini-banco:1.0
+- script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0
   displayName: 'Ejecutar aplicación en Docker'
 
