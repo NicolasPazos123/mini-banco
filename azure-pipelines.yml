@@ -27,7 +27,7 @@ steps:
   displayName: 'Publicar imagen en ACR'
   inputs:
     command: push
-    containerRegistry: 'sc-mini-banco-acr'
+    containerRegistry: 'sc-mini-banco-docker'
     repository: mini-banco
     tags: |
       1.0
