@@ -37,7 +37,7 @@ stages:
       displayName: 'Publicar imagen en ACR'
       inputs:
         command: push
-        containerRegistry: 'sc-mini-banco-docker'
+        containerRegistry: 'sc-mini-banco-docker-new'
         repository: mini-banco
         tags: |
           1.0
@@ -56,7 +56,7 @@ stages:
       displayName: 'Descargar imagen desde ACR'
       inputs:
         command: pull
-        containerRegistry: 'sc-mini-banco-docker'
+        containerRegistry: 'sc-mini-banco-docker-new'
         repository: mini-banco
         tags: |
           1.0
@@ -78,7 +78,7 @@ stages:
       displayName: 'Descargar imagen desde ACR'
       inputs:
         command: pull
-        containerRegistry: 'sc-mini-banco-docker'
+        containerRegistry: 'sc-mini-banco-docker-new'
         repository: mini-banco
         tags: |
           1.0
