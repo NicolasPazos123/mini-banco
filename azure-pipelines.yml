@@ -42,6 +42,7 @@ stages:
         tags: |
           1.0
 
+
 - stage: QA
   displayName: 'QA'
 
@@ -53,16 +54,17 @@ stages:
     steps:
 
     - task: Docker@2
-      displayName: 'Descargar imagen desde ACR'
+      displayName: 'Iniciar sesión en ACR'
       inputs:
-        command: pull
+        command: login
         containerRegistry: 'sc-mini-banco-docker-new'
-        repository: mini-banco
-        tags: |
-          1.0
+
+    - script: docker pull minibancolab2026.azurecr.io/mini-banco:1.0
+      displayName: 'Descargar imagen desde ACR'
 
     - script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0
       displayName: 'Ejecutar aplicación en QA'
+
 
 - stage: Production
   displayName: 'Production'
@@ -75,13 +77,13 @@ stages:
     steps:
 
     - task: Docker@2
-      displayName: 'Descargar imagen desde ACR'
+      displayName: 'Iniciar sesión en ACR'
       inputs:
-        command: pull
+        command: login
         containerRegistry: 'sc-mini-banco-docker-new'
-        repository: mini-banco
-        tags: |
-          1.0
+
+    - script: docker pull minibancolab2026.azurecr.io/mini-banco:1.0
+      displayName: 'Descargar imagen desde ACR'
 
     - script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0
       displayName: 'Ejecutar aplicación en Production'
