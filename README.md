@@ -72,7 +72,7 @@ curl http://localhost:5001/v2/mini-banco/tags/list
 
 ## Próximos pasos
 
-- [ ] Aprobación manual antes de Producción
+- [x] Aprobación manual antes de Producción
 - [ ] Validación en Pull Request y política de *squash merge* en `master`
 - [ ] Asignación automática de puertos por feature (rango 3000–3099)
 - [ ] Limpieza automática de contenedores e imágenes locales
