@@ -1,89 +1,85 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Pipeline CI/CD de mini-banco
+# Corre en un agente propio (Pool-CI) y usa un registry local en vez de ACR.
+# Flujo: Build (construir -> probar -> publicar) -> Desarrollo -> QA -> Produccion
+# La imagen se construye UNA sola vez y los ambientes descargan esa misma imagen.
 
 trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  name: Pool-CI
+
+variables:
+  registry: 'localhost:5001'
+  imageName: 'mini-banco'
+  imageTag: 'sha-$(Build.SourceVersion)'
+  image: '$(registry)/$(imageName):$(imageTag)'
 
 stages:
 
 - stage: Build
-  displayName: 'Build'
-
+  displayName: 'Build: construir, probar y publicar'
   jobs:
-
   - job: BuildAndTest
     displayName: 'Construir y probar'
-
+    workspace:
+      clean: all
     steps:
+    - checkout: self
 
-    - task: Docker@2
-      displayName: 'Construir imagen Docker'
-      inputs:
-        command: build
-        repository: minibancolab2026.azurecr.io/mini-banco
-        Dockerfile: '**/Dockerfile'
-        tags: |
-          1.0
+    - script: docker build -t $(image) .
+      displayName: 'Construir imagen'
 
-    - script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0 python3 -m pytest
-      displayName: 'Ejecutar tests en Docker'
+    - script: docker run --rm $(image) python3 -m pytest
+      displayName: 'Ejecutar tests dentro de la imagen'
 
-    - task: Docker@2
-      displayName: 'Publicar imagen en ACR'
-      inputs:
-        command: push
-        containerRegistry: 'sc-mini-banco-docker-new'
-        repository: mini-banco
-        tags: |
-          1.0
+    - script: docker push $(image)
+      displayName: 'Publicar imagen en el registry local'
 
+- stage: Desarrollo
+  displayName: 'Desarrollo'
+  dependsOn: Build
+  jobs:
+  - deployment: DeployDesarrollo
+    displayName: 'Desplegar en Desarrollo'
+    environment: Desarrollo
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: docker pull $(image)
+            displayName: 'Descargar imagen'
+          - script: docker run --rm $(image)
+            displayName: 'Ejecutar aplicacion'
 
 - stage: QA
   displayName: 'QA'
-
+  dependsOn: Desarrollo
   jobs:
+  - deployment: DeployQA
+    displayName: 'Desplegar en QA'
+    environment: QA
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: docker pull $(image)
+            displayName: 'Descargar imagen'
+          - script: docker run --rm $(image)
+            displayName: 'Ejecutar aplicacion'
 
-  - job: TestQA
-    displayName: 'Probar aplicación en QA'
-
-    steps:
-
-    - task: Docker@2
-      displayName: 'Iniciar sesión en ACR'
-      inputs:
-        command: login
-        containerRegistry: 'sc-mini-banco-docker-new'
-
-    - script: docker pull minibancolab2026.azurecr.io/mini-banco:1.0
-      displayName: 'Descargar imagen desde ACR'
-
-    - script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0
-      displayName: 'Ejecutar aplicación en QA'
-
-
-- stage: Production
-  displayName: 'Production'
-
+- stage: Produccion
+  displayName: 'Produccion'
+  dependsOn: QA
   jobs:
-
-  - job: DeployProduction
-    displayName: 'Desplegar en Production'
-
-    steps:
-
-    - task: Docker@2
-      displayName: 'Iniciar sesión en ACR'
-      inputs:
-        command: login
-        containerRegistry: 'sc-mini-banco-docker-new'
-
-    - script: docker pull minibancolab2026.azurecr.io/mini-banco:1.0
-      displayName: 'Descargar imagen desde ACR'
-
-    - script: docker run --rm minibancolab2026.azurecr.io/mini-banco:1.0
-      displayName: 'Ejecutar aplicación en Production'
+  - deployment: DeployProd
+    displayName: 'Desplegar en Produccion'
+    environment: Produccion
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: docker pull $(image)
+            displayName: 'Descargar imagen'
+          - script: docker run --rm $(image)
+            displayName: 'Ejecutar aplicacion'
