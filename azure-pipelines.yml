@@ -34,6 +34,9 @@ stages:
     - script: docker run --rm $(image) python3 -m pytest
       displayName: 'Ejecutar tests dentro de la imagen'
 
+    - script: docker run --rm $(image)
+      displayName: 'Smoke test: ejecutar la aplicacion'
+
     - script: docker push $(image)
       displayName: 'Publicar imagen en el registry local'
       condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
