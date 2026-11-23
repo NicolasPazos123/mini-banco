@@ -2,6 +2,7 @@
 # Corre en un agente propio (Pool-CI) y usa un registry local en vez de ACR.
 # Flujo: Build (construir -> probar -> publicar) -> Desarrollo -> QA -> Produccion
 # La imagen se construye UNA sola vez y los ambientes descargan esa misma imagen.
+# En un Pull Request solo se construye y prueba: no se publica ni se despliega.
 
 trigger:
 - master
@@ -35,9 +36,11 @@ stages:
 
     - script: docker push $(image)
       displayName: 'Publicar imagen en el registry local'
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
 - stage: Desarrollo
   displayName: 'Desarrollo'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   dependsOn: Build
   jobs:
   - deployment: DeployDesarrollo
@@ -54,6 +57,7 @@ stages:
 
 - stage: QA
   displayName: 'QA'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   dependsOn: Desarrollo
   jobs:
   - deployment: DeployQA
@@ -70,6 +74,7 @@ stages:
 
 - stage: Produccion
   displayName: 'Produccion'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   dependsOn: QA
   jobs:
   - deployment: DeployProd
