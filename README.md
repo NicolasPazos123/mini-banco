@@ -8,12 +8,13 @@ Laboratorio personal para practicar un flujo CI/CD de nivel empresarial **sin ga
 
 ```mermaid
 flowchart LR
-    Dev[Desarrollador<br/>git push a master] --> Repo[Azure Repos]
+    Dev[Desarrollador<br/>rama feature/*] -->|Pull Request| PR{Validación PR<br/>+ revisión}
+    PR -->|squash merge| Repo[master<br/>Azure Repos]
     Repo -->|trigger| Pipe[Azure Pipelines]
     Pipe -->|asigna jobs| Agent[Agente self-hosted<br/>Pool-CI · mac-nicolas]
 
     subgraph Build[Stage Build]
-        B1[docker build] --> B2[pytest dentro<br/>de la imagen] --> B3[docker push]
+        B1[docker build] --> B2[pytest dentro<br/>de la imagen] --> B4[smoke test] --> B3[docker push]
     end
 
     Agent --> Build
@@ -21,7 +22,8 @@ flowchart LR
 
     Reg -->|pull misma imagen| D[Desarrollo]
     D --> Q[QA]
-    Q --> P[Producción]
+    Q --> A{Aprobación<br/>manual}
+    A --> P[Producción]
 ```
 
 ## Qué demuestra este proyecto
@@ -33,7 +35,10 @@ flowchart LR
 | **Tags inmutables por commit** | Cada imagen se etiqueta `sha-<commit>`, así se sabe exactamente qué código corre en cada ambiente. |
 | **Build once, deploy many** | La imagen se construye y prueba una sola vez; Desarrollo, QA y Producción descargan **la misma** imagen (sin rebuild). |
 | **Tests sobre el artefacto real** | `pytest` se ejecuta dentro de la imagen construida; si falla, la imagen nunca se publica. |
+| **Smoke test** | Después de los tests, la imagen ejecuta la aplicación una vez: si no arranca, la pipeline se detiene antes de publicar. |
+| **Flujo por Pull Request** | `master` está protegida: todo cambio entra por PR, con validación automática (build, tests y smoke test, sin publicar ni desplegar), revisión obligatoria y *squash merge* (un commit por feature). |
 | **Environments con historial** | Cada ambiente es un *environment* de Azure DevOps, que registra qué commit se desplegó, cuándo y quién lo disparó. |
+| **Aprobación antes de Producción** | El environment `Produccion` exige aprobación manual; queda registrado quién aprobó y con qué comentario. |
 
 ## Estructura
 
@@ -63,7 +68,8 @@ flowchart LR
    ./run.sh      # deja el agente escuchando trabajos
    ```
 4. **Crear los environments** `Desarrollo`, `QA` y `Produccion` (Pipelines → Environments).
-5. Hacer push a `master` y ver correr la pipeline.
+5. **Proteger `master`** con *branch policies*: mínimo 1 revisor, *Build Validation* con esta pipeline y solo *squash merge*.
+6. Crear una rama `feature/*`, abrir un Pull Request hacia `master` y, al completarlo, ver correr la pipeline completa.
 
 Verificar la imagen publicada:
 ```bash
@@ -73,7 +79,7 @@ curl http://localhost:5001/v2/mini-banco/tags/list
 ## Próximos pasos
 
 - [x] Aprobación manual antes de Producción
-- [ ] Validación en Pull Request y política de *squash merge* en `master`
+- [x] Validación en Pull Request y política de *squash merge* en `master`
 - [ ] Asignación automática de puertos por feature (rango 3000–3099)
 - [ ] Limpieza automática de contenedores e imágenes locales
 - [ ] Escaneo de vulnerabilidades de la imagen (Trivy)
