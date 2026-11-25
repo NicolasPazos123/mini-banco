@@ -5,8 +5,14 @@
 # En un Pull Request solo se construye y prueba: el push y los despliegues
 # se eliminan del plan en compile time con ${{ if }} (no aparecen en la ejecucion).
 
+# Se dispara con cada commit a master, excepto si solo cambia documentacion.
 trigger:
-- master
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - README.md
 
 pool:
   name: Pool-CI
